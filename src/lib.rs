@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use flate2::write::GzEncoder;
 use flate2::Compression;
 use tokio::io::AsyncBufReadExt;
@@ -7,7 +9,7 @@ pub async fn check_file_exist(filename: &str) -> bool {
     metadata.is_ok()
 }
 
-pub async fn copy(src: &str, dst: &str) -> std::io::Result<()> {
+pub async fn copy(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> std::io::Result<()> {
     let mut reader = tokio::fs::OpenOptions::new().read(true).open(src).await?;
     let mut writer = tokio::fs::OpenOptions::new()
         .write(true)

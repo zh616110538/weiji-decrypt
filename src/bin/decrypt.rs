@@ -1,5 +1,8 @@
 use clap::Parser;
-use std::sync::{Arc, Mutex};
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 use weiji_decrypt::*;
 
 #[derive(Parser, Debug)]
@@ -86,9 +89,16 @@ pub fn convert_filename(filename: &str) -> (String, String) {
 // 4. 将exe格式的文件带走到自己的电脑上，并将文件名还原为源文件名
 pub async fn decrypt(filename: String) -> std::io::Result<()> {
     let (png, exe) = convert_filename(&filename);
-    tokio::fs::rename(filename, &png).await?;
+    // let current_dir = std::env::current_dir().unwrap();
+    let filename = PathBuf::from(filename);
+    let png = PathBuf::from(png);
+    let exe = PathBuf::from(exe);
+    // 这句也不知道为什么不行，可能用了加密系统文件并不存在于问题
+    // tokio::fs::rename(filename, &png).await?;
+    copy(&filename, &png).await?;
     copy(&png, &exe).await?;
     tokio::fs::remove_file(png).await?;
+    tokio::fs::remove_file(filename).await?;
     Ok(())
 }
 
