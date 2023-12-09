@@ -52,7 +52,7 @@ async fn main() -> std::io::Result<()> {
     let paths = paths.lock().unwrap();
     match create_tar_gz(&tar_path, &paths, |filename| {
         let path = std::path::Path::new(filename);
-        revert_filename(path.file_name().unwrap().to_str().unwrap())
+        revert_filename(path.to_str().unwrap())
     }) {
         Ok(_) => paths.iter().for_each(|filename| {
             std::fs::remove_file(filename)

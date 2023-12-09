@@ -1,7 +1,6 @@
 use std::fs;
 use std::io::prelude::*;
 use std::process::{Command, Stdio};
-use walkdir::WalkDir;
 
 fn main() -> std::io::Result<()> {
     let decrypt_path = "decrypt.exe";
@@ -16,15 +15,26 @@ fn main() -> std::io::Result<()> {
 
     {
         let stdin = child.stdin.as_mut().unwrap();
-        for entry in WalkDir::new(target_path) {
-            let entry = entry.unwrap();
-            if entry.file_type().is_file() {
-                writeln!(stdin, "{}", entry.path().display())?;
-            }
-        }
+        visit_dirs(std::path::Path::new(target_path), stdin)?;
     }
 
     let _ = child.wait()?;
 
+    Ok(())
+}
+
+fn visit_dirs(dir: &std::path::Path, stdin: &mut std::process::ChildStdin) -> std::io::Result<()> {
+    if dir.is_dir() {
+        for entry in fs::read_dir(dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_dir() {
+                visit_dirs(&path, stdin)?;
+            } else {
+                // 在这里处理文件，比如打印它的路径
+                writeln!(stdin, "{}", entry.path().display())?;
+            }
+        }
+    }
     Ok(())
 }
