@@ -50,7 +50,10 @@ where
     }
     while let Some(res) = set.join_next().await {
         let out = res?;
-        out.map_err(|e| eprintln!("{}", e)).unwrap();
+        // 移除 .unwrap()，只打印错误，允许循环继续处理其他文件
+        if let Err(e) = out {
+            eprintln!("处理文件时出错: {}", e);
+        }
     }
 
     Ok(())
